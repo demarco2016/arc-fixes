@@ -11,7 +11,8 @@
     "example:04": "node examples/04-destination-differences.js",
     "example:05": "node examples/05-estimate-spend.js",
     "example:06": "node examples/06-partial-liquidity.js",
-    "example:07": "node examples/07-fallback-rules.js"
+    "example:07": "node examples/07-fallback-rules.js",
+    "example:08": "node examples/08-real-world-flow.js"
   },
   "keywords": ["arc", "unified-balance-kit", "usdc", "circle", "web3"],
   "license": "MIT"
