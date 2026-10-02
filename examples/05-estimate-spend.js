@@ -2,9 +2,11 @@
 // Pre-execution fee & route checks before committing.
 // Blog: "Using estimateSpend() for Route Decisions"
 
-import { UnifiedBalanceKit } from "../src/kit.js"
+import { compareAmounts } from "../src/amounts.js"
 
-const kit = new UnifiedBalanceKit()
+import { SimulationKit } from "../src/kit.js"
+
+const kit = new SimulationKit()
 
 async function main() {
   const evmAdapter = "evm"
@@ -28,7 +30,7 @@ async function main() {
 
   // Decision: is the route still acceptable?
   const FEE_THRESHOLD = "5.00"
-  if (estimate.fees.total > FEE_THRESHOLD) {
+  if (compareAmounts(estimate.fees.total, FEE_THRESHOLD) > 0) {
     console.log("Fees too high — rerouting or alerting user")
     return
   }
@@ -45,7 +47,10 @@ async function main() {
     },
   })
 
-  console.log("Executed:", result)
+  console.log("Simulated result:", result)
 }
 
-main().catch(console.error)
+main().catch((error) => {
+  console.error(error.message)
+  process.exitCode = 1
+})

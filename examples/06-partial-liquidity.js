@@ -2,9 +2,11 @@
 // Three-state balance model: insufficient / no valid route / fallback.
 // Blog: "Partial Liquidity as a Product State"
 
-import { UnifiedBalanceKit } from "../src/kit.js"
+import { compareAmounts } from "../src/amounts.js"
 
-const kit = new UnifiedBalanceKit()
+import { SimulationKit } from "../src/kit.js"
+
+const kit = new SimulationKit()
 
 async function main() {
   const amount = "200.00"
@@ -15,7 +17,7 @@ async function main() {
   const balances = await kit.getBalances("USDC")
   const totalSpendable = balances.available
 
-  if (totalSpendable < amount) {
+  if (compareAmounts(totalSpendable, amount) < 0) {
     console.log("STATE: insufficient total spendable balance")
     console.log(`Need ${amount}, have ${totalSpendable}`)
     return
@@ -35,7 +37,7 @@ async function main() {
     to: { chain: destination, recipientAddress: recipient },
   })
 
-  if (estimate.fees.total > "10.00") {
+  if (compareAmounts(estimate.fees.total, "10.00") > 0) {
     console.log("STATE: enough balance, executing on fallback path")
     // In practice, try alternative routes or partial fills
   }
@@ -46,8 +48,8 @@ async function main() {
     to: { chain: destination, recipientAddress: recipient },
   })
 
-  console.log("Executed:", {
-    state: "success",
+  console.log("Simulated result:", {
+    state: "simulated",
     amount,
     destination,
     fees: estimate.fees,
@@ -55,4 +57,7 @@ async function main() {
   })
 }
 
-main().catch(console.error)
+main().catch((error) => {
+  console.error(error.message)
+  process.exitCode = 1
+})
