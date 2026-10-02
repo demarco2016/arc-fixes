@@ -1,80 +1,83 @@
-# Arc Fixes
+# Arc Fixes: Offline Routing Examples
 
-> Unified Balance Kit — routing, forwarding, fallback patterns & production safeguards for Arc Network.
+Eight runnable JavaScript teaching examples for balance checks, fee thresholds,
+route selection, and fallback decisions. They use an **offline simulation** in
+`src/kit.js`, not a live Arc SDK, RPC endpoint, or wallet. Running an example
+creates no real transactions and proves no testnet contribution or airdrop eligibility.
 
-[![GitHub last commit](https://img.shields.io/github/last-commit/demarco2016/arc-fixes?style=flat&label=Updated)](https://github.com/demarco2016/arc-fixes/commits/main)
-[![GitHub repo size](https://img.shields.io/github/repo-size/demarco2016/arc-fixes?style=flat)](https://github.com/demarco2016/arc-fixes)
-[![License](https://img.shields.io/github/license/demarco2016/arc-fixes?style=flat)](LICENSE)
-[![X Follow](https://img.shields.io/twitter/follow/Demarco639?style=social&label=Follow)](https://x.com/Demarco639)
+## Requirements and quick start
 
----
-
-Practical examples and patterns for [Arc's Unified Balance Kit](https://docs.arc.network/app-kit/unified-balance).
-
-Based on the blog series:
-- **Part 1** — [Rethinking Payment & Treasury App Architectures](https://www.arc.io/blog/unified-balance-kit-rethinking-payment-and-treasury-app-architectures)
-- **Part 2** — [Available Balances, Pending Balances, and Funds in Motion](https://www.arc.io/blog/unified-balance-kit-available-balances-pending-balances-and-funds-in-motion)
-- **Part 3** — [Partial Liquidity, Routing, and Fallback Patterns](https://www.arc.io/blog/unified-balance-kit-partial-liquidity-routing-and-fallback-patterns) ← this repo
-
-## Contents
-
-| # | Example | Pattern |
-|---|---------|---------|
-| 01 | [Auto Allocation](examples/01-auto-allocation.js) | Default routing — let the kit allocate across sources |
-| 02 | [Route Validation](examples/02-route-validation.js) | Filter chains by capability before signing |
-| 03 | [Forwarding](examples/03-forwarding.js) | Forwarding service integration with `transferId` tracking |
-| 04 | [Destination Differences](examples/04-destination-differences.js) | EVM vs Solana recipient format validation |
-| 05 | [Estimate Spend](examples/05-estimate-spend.js) | Pre-execution fee & route checks |
-| 06 | [Partial Liquidity](examples/06-partial-liquidity.js) | Three-state balance model: insufficient / no route / fallback |
-| 07 | [Fallback Rules](examples/07-fallback-rules.js) | Multi-strategy fallback with delegate & gateway monitoring |
-| 08 | [Real-World Flow](examples/08-real-world-flow.js) | Complete app flow combining all patterns |
-
-## Production Setup
-
-Install the real SDK:
-
-```bash
-npm install @arcnetwork/unified-balance-kit
-```
-
-Configure credentials in your Arc Console dashboard, then initialize:
-
-```js
-import { UnifiedBalanceKit } from "@arcnetwork/unified-balance-kit"
-
-const kit = new UnifiedBalanceKit({
-  apiKey: process.env.ARC_API_KEY,
-  apiSecret: process.env.ARC_API_SECRET,
-})
-```
-
-## Quick Start
+Use Node.js 22 or newer. No dependencies, credentials, or environment files are needed.
 
 ```bash
 git clone https://github.com/demarco2016/arc-fixes.git
 cd arc-fixes
-npm install
-cp .env.example .env
 node examples/01-auto-allocation.js
+npm run example:08
+npm test
 ```
 
-## Wallet Compatibility (Solana)
+All examples start with a `SIMULATION ONLY` notice. `SimulationKit` returns
+synthetic fixtures: balances, chain labels, fees, and delegate readiness are
+illustrative values. IDs begin with `simulated_`; spend status is `simulated`,
+never a claim of on-chain confirmation.
 
-| Wallet | Burn-Intent Signing |
-|--------|-------------------|
-| Phantom | Not supported |
-| Solflare | Supported ✅ |
-| Backpack | Supported ✅ |
+## Examples
 
-If your flow depends on wallet-based burn-intent signing on Solana, use Solflare or Backpack.
+| Example | Teaching focus |
+| --- | --- |
+| `01-auto-allocation.js` | Shape of an allocation request |
+| `02-route-validation.js` | Filter a synthetic route list |
+| `03-forwarding.js` | Illustrative forwarding request and ID |
+| `04-destination-differences.js` | Address format hints only |
+| `05-estimate-spend.js` | Compare example fees to a limit |
+| `06-partial-liquidity.js` | Compare available balance and route availability |
+| `07-fallback-rules.js` | Select a route using fee thresholds |
+| `08-real-world-flow.js` | Combine the illustrative checks |
 
-## Links
+The former local `UnifiedBalanceKit` export is now named `SimulationKit`;
+update any imports to make the offline behavior explicit.
 
-- [Unified Balance Kit Docs](https://docs.arc.network/app-kit/unified-balance)
-- [Arc Network](https://arc.network)
-- [Arc Console](https://console.arc.network)
-- [X: @Demarco639](https://x.com/Demarco639)
+## Module usage
 
----
+```js
+import { SimulationKit } from './src/kit.js'
+import { compareAmounts } from './src/amounts.js'
 
-<sub>Maintained by [@demarco2016](https://github.com/demarco2016). Built on Arc testnet by Circle Technology Services, LLC.</sub>
+const kit = new SimulationKit()
+const balances = await kit.getBalances('USDC')
+if (compareAmounts(balances.available, '200.00') >= 0) {
+  console.log('Synthetic balance meets the example threshold')
+}
+```
+
+`compareAmounts(left, right)` accepts non-negative decimal **strings** and
+returns -1, 0, or 1 using exact integer arithmetic. It rejects malformed values.
+This avoids both lexical ordering (where `"10" < "5"`) and floating-point
+rounding. It does not convert currencies or handle token decimals for live transfers.
+
+## Limits and integration work
+
+- The local simulator is not an implementation or compatibility guarantee for
+  any published Arc SDK. Its methods are teaching interfaces.
+- Estimates are fixed fixtures, not quotes computed from amounts, liquidity,
+  routes, or network conditions. Supported chain labels are fixtures too.
+- Address regex checks do not verify account existence, EVM checksum, Solana
+  decoded byte length, token-account ownership, or associated token accounts.
+- Printed gateway events are illustrative strings, not subscribed network events.
+- Before a live integration, verify the current official API, network and token
+  support, wallet capabilities, quote validity, and signing requirements against
+  [Arc documentation](https://docs.arc.network/). Keep credentials on the server
+  and obtain explicit approval before signing or spending funds.
+- This repository provides no security audit, production-readiness guarantee,
+  live activity claim, or airdrop eligibility guarantee.
+
+## Tests
+
+`npm test` uses Node's built-in test runner. It covers numeric ordering regressions,
+exact large/small values, invalid inputs, simulation disclosures, and actual
+execution of all eight examples. GitHub Actions runs it on Node.js 22 and 24.
+
+## License
+
+MIT; see [LICENSE](LICENSE).

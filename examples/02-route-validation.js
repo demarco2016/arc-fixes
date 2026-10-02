@@ -2,9 +2,9 @@
 // Filter chains by capability before the user reaches signing.
 // Blog: "Validating Route Capability Before Signing"
 
-import { UnifiedBalanceKit } from "../src/kit.js"
+import { SimulationKit } from "../src/kit.js"
 
-const kit = new UnifiedBalanceKit()
+const kit = new SimulationKit()
 
 async function main() {
   // Get only chains that support destination forwarding
@@ -33,4 +33,7 @@ async function main() {
   console.log("Route-validated spend result:", result)
 }
 
-main().catch(console.error)
+main().catch((error) => {
+  console.error(error.message)
+  process.exitCode = 1
+})

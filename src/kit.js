@@ -1,33 +1,35 @@
-// UnifiedBalanceKit — minimal wrapper around Arc's Unified Balance Kit SDK.
-// Replace mock implementations with @arcnetwork/unified-balance-kit in production.
+// Offline teaching fixture. No RPC, SDK integration, wallet, or real transactions.
+// All balances, routes, fees, and outcomes below are synthetic examples.
 
-export class UnifiedBalanceKit {
-  constructor(config = {}) {
-    this.apiKey = config.apiKey ?? process.env.ARC_API_KEY
+export class SimulationKit {
+  constructor() {
+    console.log("[SIMULATION ONLY] Synthetic data; no funds moved or chain queries performed.")
   }
 
   async spend(params) {
-    // In production: call Arc's kit.spend()
+    // Hypothetical integration point; not implemented here: call Arc's kit.spend()
     console.log("[kit.spend]", JSON.stringify(params, null, 2))
     return {
-      transactionId: `tx_${Date.now()}`,
-      transferId: `fwd_${Date.now()}`,
+      transactionId: `simulated_tx_${Date.now()}`,
+      transferId: `simulated_fwd_${Date.now()}`,
       fees: { total: "2.50", breakdown: { bridge: "1.50", forwarder: "1.00" } },
-      status: "confirmed",
+      status: "simulated",
+      simulated: true,
     }
   }
 
   async estimateSpend(params) {
-    // In production: call Arc's kit.estimateSpend()
+    // Hypothetical integration point; not implemented here: call Arc's kit.estimateSpend()
     console.log("[kit.estimateSpend]", JSON.stringify(params, null, 2))
     return {
+      simulated: true,
       fees: { total: "2.50", breakdown: { bridge: "1.50", forwarder: "1.00" } },
       outcome: { destinationAmount: "97.50", rate: "1.00" },
     }
   }
 
   getSupportedChains(token, filters = {}) {
-    // In production: call Arc's kit.getSupportedChains()
+    // Hypothetical integration point; not implemented here: call Arc's kit.getSupportedChains()
     const chains = ["Arc_Testnet", "Ethereum_Sepolia", "Solana_Testnet"]
     if (filters.forwarderSupported === "destination") {
       return chains.filter((c) => c === "Arc_Testnet")
@@ -36,8 +38,9 @@ export class UnifiedBalanceKit {
   }
 
   async getBalances(token) {
-    // In production: call Arc's kit.getBalances()
+    // Hypothetical integration point; not implemented here: call Arc's kit.getBalances()
     return {
+      simulated: true,
       available: "500.00",
       pending: "50.00",
       inFlight: "25.00",
@@ -46,7 +49,7 @@ export class UnifiedBalanceKit {
   }
 
   async getDelegateStatus() {
-    // In production: call Arc's kit.getDelegateStatus()
-    return { ready: true, delegates: ["del_1", "del_2"] }
+    // Hypothetical integration point; not implemented here: call Arc's kit.getDelegateStatus()
+    return { simulated: true, ready: true, delegates: ["del_1", "del_2"] }
   }
 }

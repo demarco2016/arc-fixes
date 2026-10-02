@@ -2,9 +2,11 @@
 // Multi-strategy fallback with delegate & gateway monitoring.
 // Blog: "Fallback Rules"
 
-import { UnifiedBalanceKit } from "../src/kit.js"
+import { compareAmounts } from "../src/amounts.js"
 
-const kit = new UnifiedBalanceKit()
+import { SimulationKit } from "../src/kit.js"
+
+const kit = new SimulationKit()
 
 async function main() {
   const amount = "50.00"
@@ -34,8 +36,8 @@ async function main() {
 
   // 4. Apply fallback rules
   const routes = [
-    { name: "primary", condition: estimate.fees.total <= "3.00" },
-    { name: "secondary", condition: estimate.fees.total <= "7.00" },
+    { name: "primary", condition: compareAmounts(estimate.fees.total, "3.00") <= 0 },
+    { name: "secondary", condition: compareAmounts(estimate.fees.total, "7.00") <= 0 },
     { name: "tertiary", condition: true }, // always accept
   ]
 
@@ -60,4 +62,7 @@ async function main() {
   console.log("Transaction:", result.transactionId)
 }
 
-main().catch(console.error)
+main().catch((error) => {
+  console.error(error.message)
+  process.exitCode = 1
+})

@@ -2,16 +2,16 @@
 // EVM vs Solana recipient format validation.
 // Blog: "Destination Differences as Routing Inputs"
 
-import { UnifiedBalanceKit } from "../src/kit.js"
+import { SimulationKit } from "../src/kit.js"
 
-const kit = new UnifiedBalanceKit()
+const kit = new SimulationKit()
 
 function isValidEVMAddress(addr) {
   return /^0x[a-fA-F0-9]{40}$/.test(addr)
 }
 
-function isValidSolanaATA(addr) {
-  // Solana USDC token account or ATA — base58, ~32-44 chars
+function hasSolanaAddressShape(addr) {
+  // Only a base58 shape check; does not prove byte length, account type, or ownership.
   return /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(addr)
 }
 
@@ -28,16 +28,18 @@ async function main() {
     }
 
     if (tx.chain === "Solana_Testnet") {
-      if (!isValidSolanaATA(tx.recipient)) {
-        console.log(`INVALID: ${tx.chain} — must be token account, not wallet address`)
+      if (!hasSolanaAddressShape(tx.recipient)) {
+        console.log(`INVALID: ${tx.chain} — unexpected base58 address shape`)
         continue
       }
-      // Phantom note: does not support burn-intent signing
-      console.log(`NOTE: ${tx.chain} — use Solflare or Backpack for wallet-based signing`)
+      console.log(`NOTE: ${tx.chain} — account type and ownership are not checked by this simulation`)
     }
 
-    console.log(`VALID: ${tx.chain} — proceeding with ${tx.recipient}`)
+    console.log(`FORMAT CHECK ONLY: ${tx.chain} — ${tx.recipient}`)
   }
 }
 
-main().catch(console.error)
+main().catch((error) => {
+  console.error(error.message)
+  process.exitCode = 1
+})

@@ -2,9 +2,11 @@
 // Complete app flow combining all patterns.
 // Covers: balance check → route validation → fee estimation → execution → monitoring
 
-import { UnifiedBalanceKit } from "../src/kit.js"
+import { compareAmounts } from "../src/amounts.js"
 
-const kit = new UnifiedBalanceKit()
+import { SimulationKit } from "../src/kit.js"
+
+const kit = new SimulationKit()
 
 const AMOUNT = "100.00"
 const DESTINATION = "Arc_Testnet"
@@ -28,7 +30,7 @@ async function main() {
   const balances = await kit.getBalances("USDC")
   console.log(`Balance: ${balances.available} available, ${balances.pending} pending`)
 
-  if (Number(balances.available) < Number(AMOUNT)) {
+  if (compareAmounts(balances.available, AMOUNT) < 0) {
     console.log("STATE: insufficient balance")
     return
   }
@@ -55,7 +57,7 @@ async function main() {
   })
   console.log(`Estimated fees: ${estimate.fees.total}`)
 
-  const route = estimate.fees.total <= FEE_THRESHOLD ? "primary" : "fallback"
+  const route = compareAmounts(estimate.fees.total, FEE_THRESHOLD) <= 0 ? "primary" : "fallback"
   console.log(`Route: ${route}`)
 
   // 6. Execute
@@ -76,7 +78,10 @@ async function main() {
   console.log("gateway.spend.pending  → tx submitted")
   console.log("gateway.spend.confirmed → tx confirmed")
   console.log("gateway.spend.failed    → tx failed, routing to recovery")
-  console.log("Status:", result.status === "confirmed" ? "✅ SUCCESS" : "❌ FAILED")
+  console.log("SIMULATION ONLY: gateway events above are illustrative, not observed chain events.")
 }
 
-main().catch(console.error)
+main().catch((error) => {
+  console.error(error.message)
+  process.exitCode = 1
+})

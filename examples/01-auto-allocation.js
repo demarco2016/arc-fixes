@@ -2,9 +2,9 @@
 // Default routing — let the kit allocate across balance sources.
 // Blog: "Start with the default allocation model"
 
-import { UnifiedBalanceKit } from "../src/kit.js"
+import { SimulationKit } from "../src/kit.js"
 
-const kit = new UnifiedBalanceKit()
+const kit = new SimulationKit()
 
 async function main() {
   // Auto-allocation: provide amount + destination, kit handles sourcing
@@ -21,4 +21,7 @@ async function main() {
   // The kit picks the best source chain automatically
 }
 
-main().catch(console.error)
+main().catch((error) => {
+  console.error(error.message)
+  process.exitCode = 1
+})

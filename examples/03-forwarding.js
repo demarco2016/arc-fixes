@@ -2,9 +2,9 @@
 // Forwarding service integration with transferId tracking.
 // Blog: "Where forwarding fits"
 
-import { UnifiedBalanceKit } from "../src/kit.js"
+import { SimulationKit } from "../src/kit.js"
 
-const kit = new UnifiedBalanceKit()
+const kit = new SimulationKit()
 
 async function main() {
   const sourceAdapter = "evm" // or "solana"
@@ -48,4 +48,7 @@ async function main() {
   // Store result.transferId in your database
 }
 
-main().catch(console.error)
+main().catch((error) => {
+  console.error(error.message)
+  process.exitCode = 1
+})
